@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{width:1080px;height:1350px;overflow:hidden;
+       font-family:'Noto Sans SC',sans-serif;padding:34px}
+  .theme-fresh{--bg1:#e3f4f1;--bg2:#cfe6f5;--ground:#a8d8c8;--cell1:#f3fbf9;--cell2:#def1ec;
+               --ink:#1d3b3a;--title:#1f5e57;--sub:#5f9a90;--bubble:#fff;--bubbletext:#1d3b3a}
+  body{background:linear-gradient(160deg,var(--bg1) 0%,var(--bg2) 100%)}
+  .title{text-align:center;font-size:44px;font-weight:900;color:var(--title);
+         margin-bottom:8px;letter-spacing:.02em}
+  .subtitle{text-align:center;font-size:23px;font-weight:700;color:var(--sub);margin-bottom:18px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;
+        gap:20px;height:1150px}
+  .cell{position:relative;
+        background:linear-gradient(180deg,var(--cell1) 0%,var(--cell2) 100%);
+        border:5px solid var(--ink);border-radius:24px;overflow:hidden;
+        display:flex;align-items:flex-end;justify-content:center;padding:18px}
+  .cell::after{content:"";position:absolute;left:0;right:0;bottom:0;height:24%;
+               background:var(--ground);border-top:5px solid var(--ink);z-index:1}
+  .panel-no{position:absolute;top:14px;left:18px;z-index:6;
+            font-size:24px;font-weight:900;color:var(--ink);
+            background:#ffd76b;border:3px solid var(--ink);border-radius:50%;
+            width:48px;height:48px;display:flex;align-items:center;justify-content:center}
+
+  .role{position:relative;z-index:3;width:260px;height:300px}
+  .role.right{align-self:flex-end}
+  .ear{position:absolute;top:0;width:42px;height:110px;
+       border:5px solid var(--ink);border-radius:50% 50% 45% 45%;z-index:2}
+  .ear.l{left:74px;transform:rotate(-10deg)}
+  .ear.r{left:144px;transform:rotate(10deg)}
+  .ear-in{position:absolute;top:12px;left:50%;transform:translateX(-50%);
+          width:16px;height:64px;border-radius:50%}
+  .head{position:absolute;top:78px;left:50%;transform:translateX(-50%);
+        width:172px;height:160px;border:5px solid var(--ink);
+        border-radius:50% 50% 46% 46%;z-index:3}
+  .body{position:absolute;top:208px;left:50%;transform:translateX(-50%);
+        width:150px;height:96px;border:5px solid var(--ink);
+        border-radius:46% 46% 38% 38%;border-bottom:none;z-index:2}
+  .arm{position:absolute;top:222px;width:54px;height:30px;
+       border:5px solid var(--ink);border-radius:30px;z-index:4}
+  .arm.l{left:18px;transform:rotate(18deg)}
+  .arm.r{right:18px;transform:rotate(-18deg)}
+  .arm.up.l{top:188px;left:30px;transform:rotate(-46deg)}
+  .arm.up.r{top:188px;right:30px;transform:rotate(46deg)}
+  .foot{position:absolute;bottom:-2px;width:46px;height:24px;
+        border:5px solid var(--ink);border-radius:50%;z-index:3}
+  .foot.l{left:64px}.foot.r{right:64px}
+  .eye{position:absolute;top:64px;width:18px;height:22px;background:var(--ink);border-radius:50%;z-index:4}
+  .eye.l{left:46px}.eye.r{right:46px}
+  .eye .spark{position:absolute;top:3px;left:3px;width:6px;height:6px;background:#fff;border-radius:50%}
+  .shock .eye{width:26px;height:30px;top:58px}
+  .shock .eye.l{left:40px}.shock .eye.r{right:40px}
+  .nose{position:absolute;top:92px;left:50%;transform:translateX(-50%);
+        width:0;height:0;border:8px solid transparent;border-top-color:#c0566e;z-index:4}
+  .blush{position:absolute;top:86px;width:26px;height:14px;background:#ff8aa0;border-radius:50%;opacity:.85;z-index:4}
+  .blush.l{left:24px}.blush.r{right:24px}
+  .mouth{position:absolute;top:108px;left:50%;transform:translateX(-50%);
+         width:30px;height:16px;border-bottom:4px solid var(--ink);border-radius:0 0 20px 20px;z-index:4}
+  .shock .mouth{width:22px;height:22px;border:4px solid var(--ink);border-radius:50%;top:106px}
+  .red .ear,.red .head,.red .body,.red .arm,.red .foot{background:#ff8585}
+  .red .ear-in{background:#ffd0d0}
+  .green .ear,.green .head,.green .body,.green .arm,.green .foot{background:#8fd6a8}
+  .green .ear-in{background:#d8f3e2}
+
+  .bubble{position:absolute;z-index:5;top:42px;max-width:60%;
+    background:var(--bubble);border:4px solid var(--ink);border-radius:22px;
+    padding:14px 18px;font-size:25px;font-weight:700;color:var(--bubbletext);line-height:1.36}
+  .bubble.l{left:22px}.bubble.r{right:22px}
+  .bubble::after{content:"";position:absolute;bottom:-18px;width:0;height:0;
+    border:11px solid transparent;border-top-color:var(--ink)}
+  .bubble.l::after{left:42px}.bubble.r::after{right:42px}
+  .bubble::before{content:"";position:absolute;bottom:-11px;width:0;height:0;
+    border:8px solid transparent;border-top-color:var(--bubble);z-index:1}
+  .bubble.l::before{left:45px}.bubble.r::before{right:45px}
+  .deco{position:absolute;z-index:5;font-size:42px}
+</style>
+</head>
+<body class="theme-fresh">
+  <div class="title">深夜赶车实况 · 四格</div>
+  <div class="subtitle">航空枕、眯一会儿，和……嘴里的蚊子 🦟</div>
+  <div class="grid">
+
+    <!-- 1 对方（红·左）：哈哈哈 -->
+    <div class="cell">
+      <span class="panel-no">1</span>
+      <div class="bubble l">哈哈哈</div>
+      <div class="role red">
+        <div class="ear l"><span class="ear-in"></span></div>
+        <div class="ear r"><span class="ear-in"></span></div>
+        <div class="head">
+          <span class="eye l"><span class="spark"></span></span>
+          <span class="eye r"><span class="spark"></span></span>
+          <span class="nose"></span><span class="mouth"></span>
+          <span class="blush l"></span><span class="blush r"></span>
+        </div>
+        <div class="arm l"></div><div class="arm r"></div>
+        <div class="body"></div>
+        <div class="foot l"></div><div class="foot r"></div>
+      </div>
+      <span class="deco" style="top:24px;right:38px;font-size:34px">😄</span>
+    </div>
+
+    <!-- 2 你（绿·右）：进站航空枕眯一会儿 -->
+    <div class="cell">
+      <span class="panel-no">2</span>
+      <div class="bubble r">进站把航空枕拿出来，<br>眯一会儿就该走了</div>
+      <div class="role green right">
+        <div class="ear l"><span class="ear-in"></span></div>
+        <div class="ear r"><span class="ear-in"></span></div>
+        <div class="head">
+          <span class="eye l"></span><span class="eye r"></span>
+          <span class="nose"></span>
+          <span class="mouth" style="width:20px;border-radius:20px 20px 0 0;border-bottom:none;border-top:4px solid var(--ink);top:112px"></span>
+          <span class="blush l"></span><span class="blush r"></span>
+        </div>
+        <div class="arm l"></div><div class="arm r"></div>
+        <div class="body"></div>
+        <div class="foot l"></div><div class="foot r"></div>
+      </div>
+      <span class="deco" style="top:24px;left:40px;font-size:36px">😴</span>
+    </div>
+
+    <!-- 3 你（绿·右）：5 点半的车，5 点多检票 -->
+    <div class="cell">
+      <span class="panel-no">3</span>
+      <div class="bubble r">5 点半的车，<br>5 点多就得检票了</div>
+      <div class="role green right">
+        <div class="ear l"><span class="ear-in"></span></div>
+        <div class="ear r"><span class="ear-in"></span></div>
+        <div class="head">
+          <span class="eye l"><span class="spark"></span></span>
+          <span class="eye r"><span class="spark"></span></span>
+          <span class="nose"></span><span class="mouth"></span>
+          <span class="blush l"></span><span class="blush r"></span>
+        </div>
+        <div class="arm l"></div><div class="arm r"></div>
+        <div class="body"></div>
+        <div class="foot l"></div><div class="foot r"></div>
+      </div>
+      <span class="deco" style="top:24px;left:40px;font-size:34px">🚄</span>
+    </div>
+
+    <!-- 4 你（绿·右）：嘴里进了蚊子（反转笑点） -->
+    <div class="cell">
+      <span class="panel-no">4</span>
+      <div class="bubble r">我感觉嘴里进了个东西…<br>像是蚊子！</div>
+      <div class="role green right shock">
+        <div class="ear l"><span class="ear-in"></span></div>
+        <div class="ear r"><span class="ear-in"></span></div>
+        <div class="head">
+          <span class="eye l"></span><span class="eye r"></span>
+          <span class="nose"></span><span class="mouth"></span>
+          <span class="blush l"></span><span class="blush r"></span>
+        </div>
+        <div class="arm up l"></div><div class="arm up r"></div>
+        <div class="body"></div>
+        <div class="foot l"></div><div class="foot r"></div>
+      </div>
+      <span class="deco" style="top:22px;left:36px">🦟</span>
+      <span class="deco" style="top:70px;left:90px;font-size:30px">❗</span>
+    </div>
+
+  </div>
+</body>
+</html>

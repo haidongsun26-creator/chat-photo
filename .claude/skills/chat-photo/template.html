@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  /* =========================================================
+     chat-photo 漫画模板
+     用法：
+       1. <body class="theme-XXX">  选风格：theme-candy / theme-fresh / theme-dark / theme-retro
+       2. .grid 默认 4 格(2×2)。6 格→ rows: repeat(3,1fr)；9 格→ columns/rows 各 repeat(3,1fr)
+       3. 每格 .cell 内：一个 .bubble(.l/.r) + 一个 .role(.red/.green, 可加 .right /.shy)
+       4. 角色配色由 .red / .green 控制，可按【备选动物配色表】改色
+     ========================================================= */
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{width:1080px;height:1350px;overflow:hidden;
+       font-family:'Noto Sans SC',sans-serif;padding:34px}
+
+  /* ---- 主题变量 ---- */
+  .theme-candy{--bg1:#ffe9ef;--bg2:#ffd9c7;--ground:#f6b6c6;--cell1:#fff4f6;--cell2:#ffe0e8;
+               --ink:#2b1a20;--title:#7a2e3f;--sub:#b86b7e;--bubble:#fff;--bubbletext:#2b1a20}
+  .theme-fresh{--bg1:#e3f4f1;--bg2:#cfe6f5;--ground:#a8d8c8;--cell1:#f3fbf9;--cell2:#def1ec;
+               --ink:#1d3b3a;--title:#1f5e57;--sub:#5f9a90;--bubble:#fff;--bubbletext:#1d3b3a}
+  .theme-dark{--bg1:#1c1b29;--bg2:#2a2440;--ground:#3a2f55;--cell1:#26233a;--cell2:#1c1a2c;
+              --ink:#0c0b12;--title:#ffe27a;--sub:#b59cff;--bubble:#fdfdff;--bubbletext:#1c1a2c}
+  .theme-retro{--bg1:#f3e7c9;--bg2:#e6d2a8;--ground:#c2a06a;--cell1:#fbf3df;--cell2:#efe0bc;
+               --ink:#3a2a18;--title:#6e4a22;--sub:#a07c4a;--bubble:#fffaf0;--bubbletext:#3a2a18}
+
+  body{background:linear-gradient(160deg,var(--bg1) 0%,var(--bg2) 100%)}
+  .title{text-align:center;font-size:44px;font-weight:900;color:var(--title);
+         margin-bottom:10px;letter-spacing:.02em}
+  .subtitle{text-align:center;font-size:24px;font-weight:700;color:var(--sub);margin-bottom:20px}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;
+        gap:20px;height:1150px}
+  .cell{position:relative;
+        background:linear-gradient(180deg,var(--cell1) 0%,var(--cell2) 100%);
+        border:5px solid var(--ink);border-radius:24px;overflow:hidden;
+        display:flex;align-items:flex-end;justify-content:center;padding:18px}
+  .cell::after{content:"";position:absolute;left:0;right:0;bottom:0;height:24%;
+               background:var(--ground);border-top:5px solid var(--ink);z-index:1}
+  .panel-no{position:absolute;top:14px;left:18px;z-index:6;
+            font-size:24px;font-weight:900;color:var(--ink);
+            background:#ffd76b;border:3px solid var(--ink);border-radius:50%;
+            width:48px;height:48px;display:flex;align-items:center;justify-content:center}
+
+  /* ===== 矢量动物角色 ===== */
+  .role{position:relative;z-index:3;width:260px;height:300px}
+  .role.right{align-self:flex-end}
+  .ear{position:absolute;top:0;width:42px;height:110px;
+       border:5px solid var(--ink);border-radius:50% 50% 45% 45%;z-index:2}
+  .ear.l{left:74px;transform:rotate(-10deg)}
+  .ear.r{left:144px;transform:rotate(10deg)}
+  .ear-in{position:absolute;top:12px;left:50%;transform:translateX(-50%);
+          width:16px;height:64px;border-radius:50%}
+  .head{position:absolute;top:78px;left:50%;transform:translateX(-50%);
+        width:172px;height:160px;border:5px solid var(--ink);
+        border-radius:50% 50% 46% 46%;z-index:3}
+  .body{position:absolute;top:208px;left:50%;transform:translateX(-50%);
+        width:150px;height:96px;border:5px solid var(--ink);
+        border-radius:46% 46% 38% 38%;border-bottom:none;z-index:2}
+  .arm{position:absolute;top:222px;width:54px;height:30px;
+       border:5px solid var(--ink);border-radius:30px;z-index:4}
+  .arm.l{left:18px;transform:rotate(18deg)}
+  .arm.r{right:18px;transform:rotate(-18deg)}
+  .arm.up.l{top:188px;left:30px;transform:rotate(-46deg)}
+  .arm.up.r{top:188px;right:30px;transform:rotate(46deg)}
+  .foot{position:absolute;bottom:-2px;width:46px;height:24px;
+        border:5px solid var(--ink);border-radius:50%;z-index:3}
+  .foot.l{left:64px}.foot.r{right:64px}
+  .eye{position:absolute;top:64px;width:18px;height:22px;background:var(--ink);border-radius:50%;z-index:4}
+  .eye.l{left:46px}.eye.r{right:46px}
+  .eye .spark{position:absolute;top:3px;left:3px;width:6px;height:6px;background:#fff;border-radius:50%}
+  /* 生气态：眼睛变 > < 斜杠 */
+  .angry .eye{height:6px;border-radius:2px;top:72px}
+  .angry .eye.l{transform:rotate(20deg)}.angry .eye.r{transform:rotate(-20deg)}
+  .angry .eye .spark{display:none}
+  .nose{position:absolute;top:92px;left:50%;transform:translateX(-50%);
+        width:0;height:0;border:8px solid transparent;border-top-color:#c0566e;z-index:4}
+  .blush{position:absolute;top:86px;width:26px;height:14px;background:#ff8aa0;border-radius:50%;opacity:.85;z-index:4}
+  .blush.l{left:24px}.blush.r{right:24px}
+  .mouth{position:absolute;top:108px;left:50%;transform:translateX(-50%);
+         width:30px;height:16px;border-bottom:4px solid var(--ink);border-radius:0 0 20px 20px;z-index:4}
+  /* 哭嘴 / 撇嘴：倒圆角 */
+  .sad .mouth{border-bottom:none;border-top:4px solid var(--ink);border-radius:20px 20px 0 0;top:114px}
+  /* 泪滴 */
+  .tear{position:absolute;top:88px;width:10px;height:16px;background:#7fc4ff;
+        border-radius:50% 50% 50% 50%/60% 60% 40% 40%;z-index:5}
+  .tear.l{left:44px}.tear.r{right:44px}
+
+  /* 配色 */
+  .red .ear,.red .head,.red .body,.red .arm,.red .foot{background:#ff8585}
+  .red .ear-in{background:#ffd0d0}
+  .green .ear,.green .head,.green .body,.green .arm,.green .foot{background:#8fd6a8}
+  .green .ear-in{background:#d8f3e2}
+  .shy .blush{background:#ff5d7d;opacity:1;width:30px;height:16px}
+
+  /* ===== 气泡 ===== */
+  .bubble{position:absolute;z-index:5;top:46px;max-width:58%;
+    background:var(--bubble);border:4px solid var(--ink);border-radius:22px;
+    padding:14px 18px;font-size:27px;font-weight:700;color:var(--bubbletext);line-height:1.34}
+  .bubble.l{left:22px}.bubble.r{right:22px}
+  .bubble::after{content:"";position:absolute;bottom:-18px;width:0;height:0;
+    border:11px solid transparent;border-top-color:var(--ink)}
+  .bubble.l::after{left:42px}.bubble.r::after{right:42px}
+  .bubble::before{content:"";position:absolute;bottom:-11px;width:0;height:0;
+    border:8px solid transparent;border-top-color:var(--bubble);z-index:1}
+  .bubble.l::before{left:45px}.bubble.r::before{right:45px}
+
+  .deco{position:absolute;z-index:5;font-size:42px}
+</style>
+</head>
+<body class="theme-candy">
+  <div class="title">{{标题}}</div>
+  <div class="subtitle">{{副标题/钩子}}</div>
+  <div class="grid">
+
+    <!-- 每格按需复制；左右交替：奇数格 bubble.l + role / 偶数格 bubble.r + role.right -->
+    <div class="cell">
+      <span class="panel-no">1</span>
+      <div class="bubble l">{{台词}}</div>
+      <div class="role red">
+        <div class="ear l"><span class="ear-in"></span></div>
+        <div class="ear r"><span class="ear-in"></span></div>
+        <div class="head">
+          <span class="eye l"><span class="spark"></span></span>
+          <span class="eye r"><span class="spark"></span></span>
+          <span class="nose"></span><span class="mouth"></span>
+          <span class="blush l"></span><span class="blush r"></span>
+        </div>
+        <div class="arm l"></div><div class="arm r"></div>
+        <div class="body"></div>
+        <div class="foot l"></div><div class="foot r"></div>
+      </div>
+      <span class="deco" style="top:28px;right:38px">❤</span>
+    </div>
+
+    <div class="cell">
+      <span class="panel-no">2</span>
+      <div class="bubble r">{{台词}}</div>
+      <div class="role green right">
+        <div class="ear l"><span class="ear-in"></span></div>
+        <div class="ear r"><span class="ear-in"></span></div>
+        <div class="head">
+          <span class="eye l"><span class="spark"></span></span>
+          <span class="eye r"><span class="spark"></span></span>
+          <span class="nose"></span><span class="mouth"></span>
+          <span class="blush l"></span><span class="blush r"></span>
+        </div>
+        <div class="arm l"></div><div class="arm r"></div>
+        <div class="body"></div>
+        <div class="foot l"></div><div class="foot r"></div>
+      </div>
+      <span class="deco" style="top:32px;left:38px">✨</span>
+    </div>
+
+  </div>
+</body>
+</html>

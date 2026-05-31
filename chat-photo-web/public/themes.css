@@ -1,0 +1,9 @@
+/* chat-photo 4 套风格主题（抽自 skill/template.html，网页与 skill 共用同一套视觉变量） */
+.theme-candy{--bg1:#ffe9ef;--bg2:#ffd9c7;--ground:#f6b6c6;--cell1:#fff4f6;--cell2:#ffe0e8;
+             --ink:#2b1a20;--title:#7a2e3f;--sub:#b86b7e;--bubble:#fff;--bubbletext:#2b1a20}
+.theme-fresh{--bg1:#e3f4f1;--bg2:#cfe6f5;--ground:#a8d8c8;--cell1:#f3fbf9;--cell2:#def1ec;
+             --ink:#1d3b3a;--title:#1f5e57;--sub:#5f9a90;--bubble:#fff;--bubbletext:#1d3b3a}
+.theme-dark{--bg1:#1c1b29;--bg2:#2a2440;--ground:#3a2f55;--cell1:#26233a;--cell2:#1c1a2c;
+            --ink:#0c0b12;--title:#ffe27a;--sub:#b59cff;--bubble:#fdfdff;--bubbletext:#1c1a2c}
+.theme-retro{--bg1:#f3e7c9;--bg2:#e6d2a8;--ground:#c2a06a;--cell1:#fbf3df;--cell2:#efe0bc;
+             --ink:#3a2a18;--title:#6e4a22;--sub:#a07c4a;--bubble:#fffaf0;--bubbletext:#3a2a18}

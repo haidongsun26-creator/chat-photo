@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{width:1080px;height:1350px;overflow:hidden;
+       font-family:'Noto Sans SC',sans-serif;padding:34px}
+  .theme-candy{--bg1:#ffe9ef;--bg2:#ffd9c7;--ground:#f6b6c6;--cell1:#fff4f6;--cell2:#ffe0e8;
+               --ink:#2b1a20;--title:#7a2e3f;--sub:#b86b7e;--bubble:#fff;--bubbletext:#2b1a20}
+  body{background:linear-gradient(160deg,var(--bg1) 0%,var(--bg2) 100%)}
+  .title{text-align:center;font-size:44px;font-weight:900;color:var(--title);
+         margin-bottom:8px;letter-spacing:.02em}
+  .subtitle{text-align:center;font-size:23px;font-weight:700;color:var(--sub);margin-bottom:16px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,1fr);
+        gap:18px;height:1160px}
+  .cell{position:relative;
+        background:linear-gradient(180deg,var(--cell1) 0%,var(--cell2) 100%);
+        border:5px solid var(--ink);border-radius:24px;overflow:hidden;
+        display:flex;align-items:flex-end;justify-content:center;padding:16px}
+  .cell::after{content:"";position:absolute;left:0;right:0;bottom:0;height:24%;
+               background:var(--ground);border-top:5px solid var(--ink);z-index:1}
+  .panel-no{position:absolute;top:12px;left:14px;z-index:6;
+            font-size:22px;font-weight:900;color:var(--ink);
+            background:#ffd76b;border:3px solid var(--ink);border-radius:50%;
+            width:44px;height:44px;display:flex;align-items:center;justify-content:center}
+
+  .role{position:relative;z-index:3;width:230px;height:270px}
+  .role.right{align-self:flex-end}
+  .role.back{transform:scaleX(-1)}
+  .ear{position:absolute;top:0;width:38px;height:98px;
+       border:5px solid var(--ink);border-radius:50% 50% 45% 45%;z-index:2}
+  .ear.l{left:66px;transform:rotate(-10deg)}
+  .ear.r{left:128px;transform:rotate(10deg)}
+  .ear-in{position:absolute;top:10px;left:50%;transform:translateX(-50%);
+          width:14px;height:56px;border-radius:50%}
+  .head{position:absolute;top:70px;left:50%;transform:translateX(-50%);
+        width:152px;height:142px;border:5px solid var(--ink);
+        border-radius:50% 50% 46% 46%;z-index:3}
+  .body{position:absolute;top:186px;left:50%;transform:translateX(-50%);
+        width:132px;height:86px;border:5px solid var(--ink);
+        border-radius:46% 46% 38% 38%;border-bottom:none;z-index:2}
+  .arm{position:absolute;top:198px;width:48px;height:28px;
+       border:5px solid var(--ink);border-radius:30px;z-index:4}
+  .arm.l{left:14px;transform:rotate(18deg)}
+  .arm.r{right:14px;transform:rotate(-18deg)}
+  .arm.up.l{top:166px;left:24px;transform:rotate(-46deg)}
+  .arm.up.r{top:166px;right:24px;transform:rotate(46deg)}
+  .foot{position:absolute;bottom:-2px;width:40px;height:22px;
+        border:5px solid var(--ink);border-radius:50%;z-index:3}
+  .foot.l{left:56px}.foot.r{right:56px}
+  .eye{position:absolute;top:58px;width:16px;height:20px;background:var(--ink);border-radius:50%;z-index:4}
+  .eye.l{left:40px}.eye.r{right:40px}
+  .eye .spark{position:absolute;top:3px;left:3px;width:5px;height:5px;background:#fff;border-radius:50%}
+  .angry .eye{height:6px;width:20px;border-radius:2px;top:64px}
+  .angry .eye.l{left:36px;transform:rotate(20deg)}
+  .angry .eye.r{right:36px;transform:rotate(-20deg)}
+  .angry .eye .spark{display:none}
+  .nose{position:absolute;top:82px;left:50%;transform:translateX(-50%);
+        width:0;height:0;border:7px solid transparent;border-top-color:#c0566e;z-index:4}
+  .blush{position:absolute;top:78px;width:24px;height:13px;background:#ff8aa0;border-radius:50%;opacity:.85;z-index:4}
+  .blush.l{left:20px}.blush.r{right:20px}
+  .mouth{position:absolute;top:96px;left:50%;transform:translateX(-50%);
+         width:28px;height:15px;border-bottom:4px solid var(--ink);border-radius:0 0 20px 20px;z-index:4}
+  .sad .mouth{border-bottom:none;border-top:4px solid var(--ink);border-radius:20px 20px 0 0;top:102px;width:24px}
+  .tear{position:absolute;top:78px;width:11px;height:20px;background:#7fc4ff;
+        border:3px solid var(--ink);border-radius:50% 50% 50% 50%/65% 65% 35% 35%;z-index:5}
+  .tear.l{left:36px}.tear.r{right:36px}
+  .red .ear,.red .head,.red .body,.red .arm,.red .foot{background:#ff8585}
+  .red .ear-in{background:#ffd0d0}
+  .green .ear,.green .head,.green .body,.green .arm,.green .foot{background:#8fd6a8}
+  .green .ear-in{background:#d8f3e2}
+  .shy .blush{background:#ff5d7d;opacity:1;width:28px;height:15px}
+
+  .bubble{position:absolute;z-index:5;top:34px;max-width:56%;
+    background:var(--bubble);border:4px solid var(--ink);border-radius:20px;
+    padding:12px 16px;font-size:25px;font-weight:700;color:var(--bubbletext);line-height:1.32}
+  .bubble.l{left:18px}.bubble.r{right:18px}
+  .bubble::after{content:"";position:absolute;bottom:-17px;width:0;height:0;
+    border:10px solid transparent;border-top-color:var(--ink)}
+  .bubble.l::after{left:38px}.bubble.r::after{right:38px}
+  .bubble::before{content:"";position:absolute;bottom:-10px;width:0;height:0;
+    border:7px solid transparent;border-top-color:var(--bubble);z-index:1}
+  .bubble.l::before{left:41px}.bubble.r::before{right:41px}
+  .deco{position:absolute;z-index:5;font-size:36px}
+</style>
+</head>
+<body class="theme-candy">
+  <div class="title">情侣吵架又和好 · 六格</div>
+  <div class="subtitle">从「最后一把」到「火锅奶茶」的全过程 💢→💕</div>
+  <div class="grid">
+
+    <!-- 1 红兔生气 -->
+    <div class="cell">
+      <span class="panel-no">1</span>
+      <div class="bubble l">你又只顾打游戏！</div>
+      <div class="role red angry">
+        <div class="ear l"><span class="ear-in"></span></div>
+        <div class="ear r"><span class="ear-in"></span></div>
+        <div class="head">
+          <span class="eye l"></span><span class="eye r"></span>
+          <span class="nose"></span><span class="mouth"></span>
+          <span class="blush l"></span><span class="blush r"></span>
+        </div>
+        <div class="arm up l"></div><div class="arm up r"></div>
+        <div class="body"></div>
+        <div class="foot l"></div><div class="foot r"></div>
+      </div>
+      <span class="deco" style="top:22px;right:34px">💢</span>
+    </div>
+
+    <!-- 2 绿兔敷衍 -->
+    <div class="cell">
+      <span class="panel-no">2</span>
+      <div class="bubble r">马上马上，<br>最后一把…</div>
+      <div class="role green right">
+        <div class="ear l"><span class="ear-in"></span></div>
+        <div class="ear r"><span class="ear-in"></span></div>
+        <div class="head">
+          <span class="eye l"><span class="spark"></span></span>
+          <span class="eye r"><span class="spark"></span></span>
+          <span class="nose"></span><span class="mouth"></span>
+          <span class="blush l"></span><span class="blush r"></span>
+        </div>
+        <div class="arm l"></div><div class="arm r"></div>
+        <div class="body"></div>
+        <div class="foot l"></div><div class="foot r"></div>
+      </div>
+      <span class="deco" style="top:26px;left:34px;font-size:30px">🎮</span>
+    </div>
+
+    <!-- 3 红兔委屈大哭 -->
+    <div class="cell">
+      <span class="panel-no">3</span>
+      <div class="bubble l">不理你了！哼</div>
+      <div class="role red sad">
+        <div class="ear l"><span class="ear-in"></span></div>
+        <div class="ear r"><span class="ear-in"></span></div>
+        <div class="head">
+          <span class="eye l"></span><span class="eye r"></span>
+          <span class="tear l"></span><span class="tear r"></span>
+          <span class="nose"></span><span class="mouth"></span>
+          <span class="blush l"></span><span class="blush r"></span>
+        </div>
+        <div class="arm l"></div><div class="arm r"></div>
+        <div class="body"></div>
+        <div class="foot l"></div><div class="foot r"></div>
+      </div>
+      <span class="deco" style="top:22px;right:36px">💧</span>
+    </div>
+
+    <!-- 4 绿兔慌了服软 -->
+    <div class="cell">
+      <span class="panel-no">4</span>
+      <div class="bubble r">别哭别哭，<br>我错了我错了！</div>
+      <div class="role green right">
+        <div class="ear l"><span class="ear-in"></span></div>
+        <div class="ear r"><span class="ear-in"></span></div>
+        <div class="head">
+          <span class="eye l"><span class="spark"></span></span>
+          <span class="eye r"><span class="spark"></span></span>
+          <span class="nose"></span>
+          <span class="mouth" style="width:18px"></span>
+          <span class="blush l"></span><span class="blush r"></span>
+        </div>
+        <div class="arm up l"></div><div class="arm up r"></div>
+        <div class="body"></div>
+        <div class="foot l"></div><div class="foot r"></div>
+      </div>
+      <span class="deco" style="top:24px;left:34px">😰</span>
+    </div>
+
+    <!-- 5 红兔别扭 -->
+    <div class="cell">
+      <span class="panel-no">5</span>
+      <div class="bubble l">哼…那你说<br>怎么补偿</div>
+      <div class="role red shy">
+        <div class="ear l"><span class="ear-in"></span></div>
+        <div class="ear r"><span class="ear-in"></span></div>
+        <div class="head">
+          <span class="eye l"></span><span class="eye r"></span>
+          <span class="nose"></span>
+          <span class="mouth" style="width:16px"></span>
+          <span class="blush l"></span><span class="blush r"></span>
+        </div>
+        <div class="arm l"></div><div class="arm r"></div>
+        <div class="body"></div>
+        <div class="foot l"></div><div class="foot r"></div>
+      </div>
+      <span class="deco" style="top:24px;right:36px;font-size:30px">😤</span>
+    </div>
+
+    <!-- 6 绿兔撒糖收尾 -->
+    <div class="cell">
+      <span class="panel-no">6</span>
+      <div class="bubble r">明天火锅+奶茶，<br>今晚先抱抱？😎</div>
+      <div class="role green right shy">
+        <div class="ear l"><span class="ear-in"></span></div>
+        <div class="ear r"><span class="ear-in"></span></div>
+        <div class="head">
+          <span class="eye l"><span class="spark"></span></span>
+          <span class="eye r"><span class="spark"></span></span>
+          <span class="nose"></span><span class="mouth"></span>
+          <span class="blush l"></span><span class="blush r"></span>
+        </div>
+        <div class="arm up l"></div><div class="arm up r"></div>
+        <div class="body"></div>
+        <div class="foot l"></div><div class="foot r"></div>
+      </div>
+      <span class="deco" style="top:22px;left:34px">💕</span>
+      <span class="deco" style="bottom:88px;left:50px;font-size:28px">🍲</span>
+    </div>
+
+  </div>
+</body>
+</html>

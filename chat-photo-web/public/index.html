@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>chat-photo · 对话漫画生成器</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="themes.css">
+<link rel="stylesheet" href="comic.css">
+<style>
+  :root{--brand:#e76a8a;--ink:#2b2230;--line:#e7e0e6}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Noto Sans SC',sans-serif;color:var(--ink);
+       background:linear-gradient(160deg,#fdf4f7,#f0eef8);min-height:100vh}
+  header{text-align:center;padding:28px 16px 8px}
+  header h1{margin:0;font-size:30px;font-weight:900;color:var(--brand)}
+  header p{margin:6px 0 0;color:#8a8092;font-size:14px}
+  .wrap{max-width:1240px;margin:0 auto;padding:16px;display:grid;
+        grid-template-columns:440px 1fr;gap:20px;align-items:start}
+  @media(max-width:920px){.wrap{grid-template-columns:1fr}}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;
+         box-shadow:0 6px 24px rgba(120,80,120,.06)}
+  .panel h2{margin:0 0 12px;font-size:16px}
+  label.field{display:block;margin:12px 0 6px;font-size:13px;color:#776c80;font-weight:700}
+  input[type=text]{width:100%;padding:9px 10px;border:1px solid var(--line);
+        border-radius:9px;font-size:14px;font-family:inherit}
+  .styles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .styles button{padding:9px;border:2px solid var(--line);background:#fff;border-radius:10px;
+        cursor:pointer;font-family:inherit;font-size:13px;font-weight:700}
+  .styles button.on{border-color:var(--brand);background:#fff2f6;color:var(--brand)}
+
+  /* 对话行编辑器 */
+  .lines{margin-top:6px}
+  .line{display:grid;grid-template-columns:74px 1fr 92px 30px;gap:6px;align-items:center;
+        margin-bottom:8px}
+  .line select,.line input{padding:7px 8px;border:1px solid var(--line);border-radius:8px;
+        font-size:13px;font-family:inherit;width:100%}
+  .line .who[data-who=me]{color:#2e7d57;font-weight:700}
+  .line .who[data-who=other]{color:#c2566e;font-weight:700}
+  .line .del{border:none;background:#f4eef2;border-radius:8px;cursor:pointer;
+        color:#b08;font-weight:900;height:32px}
+  .addline{width:100%;margin-top:4px;padding:9px;border:1.5px dashed #d9c7d4;background:#fff;
+        border-radius:10px;cursor:pointer;color:#a06;font-weight:700;font-family:inherit;font-size:13px}
+
+  .actions{margin-top:16px;display:flex;gap:10px}
+  .btn{flex:1;padding:11px;border:none;border-radius:10px;font-size:15px;font-weight:800;
+       cursor:pointer;font-family:inherit}
+  .btn.primary{background:var(--brand);color:#fff}
+  .btn.ghost{background:#f2eef3;color:#6b5f72}
+  .hint{font-size:12px;color:#a99fb0;margin-top:12px;line-height:1.7}
+  .status{margin-top:10px;font-size:13px;min-height:18px}
+  .status.ok{color:#3a9d6e}.status.err{color:#d6455f}
+
+  .preview-box{background:#efe9f0;border:1px solid var(--line);border-radius:16px;
+       padding:16px;overflow:hidden;min-height:320px;
+       height:calc(100vh - 150px);display:flex;align-items:center;justify-content:center}
+  .scaler{transform-origin:center center}
+</style>
+</head>
+<body>
+  <header>
+    <h1>chat-photo</h1>
+    <p>把聊天对话做成卡通对话漫画 · 纯本地运行 · 一键导出 PNG</p>
+  </header>
+
+  <div class="wrap">
+    <!-- 左：编辑器 -->
+    <div class="panel">
+      <h2>1 · 标题</h2>
+      <input type="text" id="title" placeholder="标题，如：和对象的日常" value="对话漫画">
+      <input type="text" id="subtitle" placeholder="副标题（可选）" style="margin-top:8px">
+
+      <label class="field">2 · 逐条输入对话（左=对方 / 右=自己）</label>
+      <div class="lines" id="lines"></div>
+      <button class="addline" id="add">+ 加一句</button>
+
+      <label class="field">3 · 选风格</label>
+      <div class="styles" id="styles">
+        <button data-t="theme-candy" class="on">🍬 粉色糖果</button>
+        <button data-t="theme-fresh">🌿 冷调清新</button>
+        <button data-t="theme-dark">🖤 暗黑潮酷</button>
+        <button data-t="theme-retro">📒 暖黄复古</button>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="gen">生成 / 刷新预览</button>
+        <button class="btn ghost" id="export">导出 PNG</button>
+      </div>
+      <div class="status" id="status"></div>
+      <div class="hint">
+        · 全程在你浏览器本地完成，不上传任何数据、不需要联网账号<br>
+        · 绿色气泡=自己(右)、白色=对方(左)；格数按句数自动定(≤4→4格, ≤6→6格, 否则9格)<br>
+        · 表情：开心/害羞/生气/难过/惊讶/困倦/普通
+      </div>
+    </div>
+
+    <!-- 右：预览 -->
+    <div class="panel">
+      <h2>预览 / 导出</h2>
+      <div class="preview-box">
+        <div class="scaler" id="scaler">
+          <div id="mount" style="color:#a99fb0;font-size:14px;padding:90px 0">
+            填好对话后点「生成 / 刷新预览」
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
+  <script src="render.js"></script>
+  <script>
+    const $ = s => document.querySelector(s);
+    let theme = "theme-candy", lastData = null;
+
+    const EMOTIONS = [
+      ["normal","普通"],["happy","开心"],["shy","害羞"],
+      ["angry","生气"],["sad","难过"],["shock","惊讶"],["sleepy","困倦"],
+    ];
+    // 预置一段示例，打开即有内容可玩
+    const seed = [
+      { who:"other", text:"哈哈哈", emotion:"happy" },
+      { who:"me",    text:"进站把航空枕拿出来，眯一会儿就该走了", emotion:"sleepy" },
+      { who:"me",    text:"5 点半的车，5 点多就得检票了", emotion:"normal" },
+      { who:"me",    text:"我感觉嘴里进了个东西…像是蚊子！", emotion:"shock" },
+    ];
+
+    function lineRow(d) {
+      const row = document.createElement("div");
+      row.className = "line";
+      const emoOpts = EMOTIONS.map(([v,t]) =>
+        `<option value="${v}" ${d.emotion===v?"selected":""}>${t}</option>`).join("");
+      row.innerHTML = `
+        <select class="who" data-who="${d.who}">
+          <option value="other" ${d.who==="other"?"selected":""}>对方</option>
+          <option value="me" ${d.who==="me"?"selected":""}>自己</option>
+        </select>
+        <input class="txt" type="text" value="${(d.text||"").replace(/"/g,"&quot;")}" placeholder="这句话…">
+        <select class="emo">${emoOpts}</select>
+        <button class="del" title="删除">×</button>`;
+      const who = row.querySelector(".who");
+      who.onchange = () => who.dataset.who = who.value;
+      row.querySelector(".del").onclick = () => { row.remove(); };
+      return row;
+    }
+    function addLine(d) { $("#lines").appendChild(lineRow(d || {who:"me",text:"",emotion:"normal"})); }
+    seed.forEach(addLine);
+    $("#add").onclick = () => addLine();
+
+    // 收集编辑器 → 渲染数据
+    function collect() {
+      const lines = [...$("#lines").querySelectorAll(".line")].map(r => {
+        const who = r.querySelector(".who").value;
+        return {
+          speaker: who === "me" ? "自己" : "对方",
+          side: who === "me" ? "r" : "l",
+          color: who === "me" ? "green" : "red",
+          text: r.querySelector(".txt").value.trim(),
+          emotion: r.querySelector(".emo").value,
+        };
+      }).filter(l => l.text);
+      return { title:$("#title").value.trim(), subtitle:$("#subtitle").value.trim(), lines };
+    }
+
+    $("#styles").onclick = e => {
+      const b = e.target.closest("button"); if (!b) return;
+      [...$("#styles").children].forEach(x => x.classList.remove("on"));
+      b.classList.add("on"); theme = b.dataset.t;
+      if (lastData) draw();
+    };
+
+    $("#gen").onclick = () => {
+      lastData = collect();
+      if (!lastData.lines.length) return setStatus("先至少输入一句对话", "err");
+      draw();
+      setStatus("已生成，可调风格或导出 PNG", "ok");
+    };
+    $("#export").onclick = async () => {
+      const stage = $("#mount .stage");
+      if (!stage) return setStatus("请先生成预览", "err");
+      setStatus("正在导出 PNG…", "");
+      try {
+        await ChatPhoto.exportPNG(stage, (lastData.title || "chat-photo") + ".png");
+        setStatus("已导出 ✓", "ok");
+      } catch (e) { setStatus("导出失败：" + e.message, "err"); }
+    };
+
+    function draw() { $("#mount").innerHTML = ChatPhoto.renderComic(lastData, theme); fitScale(); }
+    function fitScale() {
+      const pb = $(".preview-box");
+      const availW = pb.clientWidth - 32;          // 容器可用宽
+      const availH = pb.clientHeight - 32;         // 容器可用高
+      // 同时受宽、高约束，取较小比例，保证整张 1080×1350 都看得见
+      const scale = Math.min(1, availW / 1080, availH / 1350);
+      // 从中心缩放：缩后用 margin 抵消占位，使其在 flex 容器里真正居中
+      const s = $("#scaler");
+      s.style.transform = "scale(" + scale + ")";
+      s.style.width = "1080px";
+      s.style.height = "1350px";
+      s.style.margin = (-1350 * (1 - scale) / 2) + "px " + (-1080 * (1 - scale) / 2) + "px";
+    }
+    window.onresize = () => lastData && fitScale();
+    function setStatus(t, k) { const s = $("#status"); s.textContent = t; s.className = "status " + (k||""); }
+
+    // 打开即渲染示例
+    $("#gen").click();
+  </script>
+</body>
+</html>

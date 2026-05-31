@@ -1,0 +1,33 @@
+# ===== 通用 =====
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+build/
+dist/
+
+# IDE / 编辑器
+.vscode/
+.idea/
+*.swp
+
+# ===== Python（chat-photo-web 后端）=====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# ===== Node / Web 前端 =====
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# ===== 第三方子仓库（clone 来的绘图 MCP，自带 .git，不纳入本仓库）=====
+seedream_mcp/
+
+# ===== 运行时产物 =====
+chat-photo-web/seedream_images/
+*_preview_check.png
