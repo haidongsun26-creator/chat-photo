@@ -1,0 +1,83 @@
+/* chat-photo 漫画画布 + 矢量兔角色 + 表情态（抽自 skill/template.html + comic.html，
+   含 .shy/.angry/.sad/.tear/.shock 全套表情，与 skill 同源） */
+
+.stage{width:1080px;height:1350px;font-family:'Noto Sans SC',sans-serif;padding:34px;
+       background:linear-gradient(160deg,var(--bg1) 0%,var(--bg2) 100%);box-sizing:border-box}
+.stage *{margin:0;padding:0;box-sizing:border-box}
+.stage .title{text-align:center;font-size:44px;font-weight:900;color:var(--title);
+       margin-bottom:8px;letter-spacing:.02em}
+.stage .subtitle{text-align:center;font-size:23px;font-weight:700;color:var(--sub);margin-bottom:18px}
+
+.grid{display:grid;gap:20px}
+.grid.g4{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;height:1150px}
+.grid.g6{grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,1fr);height:1160px}
+.grid.g9{grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);height:1160px}
+
+.cell{position:relative;background:linear-gradient(180deg,var(--cell1) 0%,var(--cell2) 100%);
+      border:5px solid var(--ink);border-radius:24px;overflow:hidden;
+      display:flex;align-items:flex-end;justify-content:center;padding:18px}
+.cell::after{content:"";position:absolute;left:0;right:0;bottom:0;height:24%;
+             background:var(--ground);border-top:5px solid var(--ink);z-index:1}
+.panel-no{position:absolute;top:14px;left:18px;z-index:6;font-size:24px;font-weight:900;color:var(--ink);
+          background:#ffd76b;border:3px solid var(--ink);border-radius:50%;
+          width:48px;height:48px;display:flex;align-items:center;justify-content:center}
+
+/* ===== 矢量动物角色 ===== */
+.role{position:relative;z-index:3;width:230px;height:270px}
+.role.right{align-self:flex-end}
+.ear{position:absolute;top:0;width:38px;height:98px;border:5px solid var(--ink);
+     border-radius:50% 50% 45% 45%;z-index:2}
+.ear.l{left:66px;transform:rotate(-10deg)}
+.ear.r{left:128px;transform:rotate(10deg)}
+.ear-in{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:14px;height:56px;border-radius:50%}
+.head{position:absolute;top:70px;left:50%;transform:translateX(-50%);width:152px;height:142px;
+      border:5px solid var(--ink);border-radius:50% 50% 46% 46%;z-index:3}
+.cbody{position:absolute;top:186px;left:50%;transform:translateX(-50%);width:132px;height:86px;
+      border:5px solid var(--ink);border-radius:46% 46% 38% 38%;border-bottom:none;z-index:2}
+.arm{position:absolute;top:198px;width:48px;height:28px;border:5px solid var(--ink);border-radius:30px;z-index:4}
+.arm.l{left:14px;transform:rotate(18deg)}
+.arm.r{right:14px;transform:rotate(-18deg)}
+.arm.up.l{top:166px;left:24px;transform:rotate(-46deg)}
+.arm.up.r{top:166px;right:24px;transform:rotate(46deg)}
+.foot{position:absolute;bottom:-2px;width:40px;height:22px;border:5px solid var(--ink);border-radius:50%;z-index:3}
+.foot.l{left:56px}.foot.r{right:56px}
+.eye{position:absolute;top:58px;width:16px;height:20px;background:var(--ink);border-radius:50%;z-index:4}
+.eye.l{left:40px}.eye.r{right:40px}
+.eye .spark{position:absolute;top:3px;left:3px;width:5px;height:5px;background:#fff;border-radius:50%}
+.angry .eye{height:6px;width:20px;border-radius:2px;top:64px}
+.angry .eye.l{left:36px;transform:rotate(20deg)}
+.angry .eye.r{right:36px;transform:rotate(-20deg)}
+.angry .eye .spark{display:none}
+.shock .eye{width:24px;height:28px;top:54px}
+.shock .eye.l{left:34px}.shock .eye.r{right:34px}
+.nose{position:absolute;top:82px;left:50%;transform:translateX(-50%);width:0;height:0;
+      border:7px solid transparent;border-top-color:#c0566e;z-index:4}
+.blush{position:absolute;top:78px;width:24px;height:13px;background:#ff8aa0;border-radius:50%;opacity:.85;z-index:4}
+.blush.l{left:20px}.blush.r{right:20px}
+.mouth{position:absolute;top:96px;left:50%;transform:translateX(-50%);width:28px;height:15px;
+       border-bottom:4px solid var(--ink);border-radius:0 0 20px 20px;z-index:4}
+.sad .mouth{border-bottom:none;border-top:4px solid var(--ink);border-radius:20px 20px 0 0;top:102px;width:24px}
+.shock .mouth{width:20px;height:20px;border:4px solid var(--ink);border-radius:50%;top:100px}
+.sleepy .mouth{width:18px;border-bottom:none;border-top:4px solid var(--ink);border-radius:20px 20px 0 0;top:106px}
+.tear{position:absolute;top:74px;width:11px;height:20px;background:#7fc4ff;border:3px solid var(--ink);
+      border-radius:50% 50% 50% 50%/65% 65% 35% 35%;z-index:5}
+.tear.l{left:32px}.tear.r{right:32px}
+
+.red .ear,.red .head,.red .cbody,.red .arm,.red .foot{background:#ff8585}
+.red .ear-in{background:#ffd0d0}
+.green .ear,.green .head,.green .cbody,.green .arm,.green .foot{background:#8fd6a8}
+.green .ear-in{background:#d8f3e2}
+.shy .blush{background:#ff5d7d;opacity:1;width:28px;height:15px}
+
+/* ===== 气泡 ===== */
+.bubble{position:absolute;z-index:5;top:36px;max-width:58%;background:var(--bubble);
+        border:4px solid var(--ink);border-radius:20px;padding:12px 16px;
+        font-size:25px;font-weight:700;color:var(--bubbletext);line-height:1.32}
+.bubble.l{left:18px}.bubble.r{right:18px}
+.bubble::after{content:"";position:absolute;bottom:-17px;width:0;height:0;
+        border:10px solid transparent;border-top-color:var(--ink)}
+.bubble.l::after{left:38px}.bubble.r::after{right:38px}
+.bubble::before{content:"";position:absolute;bottom:-10px;width:0;height:0;
+        border:7px solid transparent;border-top-color:var(--bubble);z-index:1}
+.bubble.l::before{left:41px}.bubble.r::before{right:41px}
+.deco{position:absolute;z-index:5;font-size:36px}

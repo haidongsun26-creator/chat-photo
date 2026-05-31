@@ -9,21 +9,21 @@
 | 部分 | 位置 | 说明 |
 |---|---|---|
 | **chat-photo Skill** | `.claude/skills/chat-photo/` | Claude Code 技能：看聊天截图 → 自动提对话 → 渲染多格对话漫画 PNG |
-| **网页版** | `chat-photo-web/` | 纯静态网页：手动输入对话 → 选风格 → 预览 → 导出 PNG（零依赖、零 key） |
+| **网页版（在线）** | [docs/](docs/) · [在线访问](https://haidongsun26-creator.github.io/chat-photo/) | 纯静态网页：手动输入对话 → 选风格 → 预览 → 导出 PNG（零依赖、零 key） |
 | **示例成图** | `comic.png`、`示例-对话漫画.png` | 历史生成的漫画样张 |
 
 ## 安装 / 使用
 
 ### 网页版（推荐，最简单）
 
-无需安装任何东西，浏览器直接打开：
+**在线直接用** 👉 https://haidongsun26-creator.github.io/chat-photo/
 
-```
-chat-photo-web/public/index.html
-```
+或下载到本地，用浏览器打开 `docs/index.html`（与在线版同一份代码）。
 
 逐条输入对话 → 每句选「对方/自己」+ 表情 → 选风格 → 点「生成 / 刷新预览」→「导出 PNG」。
 全程在浏览器本地完成，不上传数据、不需要联网账号。
+
+> 注意：直接点本仓库里的 `.html` 文件链接只会看到源码，**不会运行**。要运行请用上面的在线网址，或把文件下载到本地双击打开。
 
 ### chat-photo Skill（在 Claude Code 里）
 
