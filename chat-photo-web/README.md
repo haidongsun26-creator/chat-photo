@@ -1,23 +1,38 @@
 # chat-photo web
 
-把聊天对话做成卡通对话漫画的网页版。**纯静态、零依赖、零 key、零后端** —— 双击即用。
+把聊天对话做成卡通对话漫画的网页版。**手动输入**模式纯静态零依赖、双击即用；另可选启用本地后端，**上传聊天截图自动提对话**。
 
 ## 怎么用
 
 直接用浏览器打开 `public/index.html` 即可（无需联网、无需安装任何东西）：
 
 1. 填标题
-2. 逐条输入对话，每句选「对方/自己」+ 表情
+2. 逐条输入对话，每句选「对方/自己」+ 表情（或见下方「上传截图自动提对话」）
 3. 选风格（粉色糖果 / 冷调清新 / 暗黑潮酷 / 暖黄复古）
 4. 点「生成 / 刷新预览」，再点「导出 PNG」
 
 也可以丢到任意静态托管（GitHub Pages / Netlify / Vercel 静态）分享给别人用。
 
-## 为什么是手动输入对话
+## 上传聊天截图，自动提对话
 
-「看图自动提对话」需要多模态模型（Claude/OpenAI/Gemini），而它们都要付费 API key。
-在无 key 的前提下，去掉看图环节、改为手动输入，是唯一能**零成本、立即可用**的方案。
-排版与出图本就在前端完成（复用 skill 的视觉，`html-to-image` 导出 PNG），所以整个网页彻底不需要后端。
+页面第 2 步有「点此选图 / 拖入聊天截图」上传区：选图（支持多张）后会自动识别对话、灌进下方编辑器并出预览，可再手动微调。
+
+此功能需要本地后端 + Claude API Key：
+
+```bash
+cp .env.example .env       # 填 ANTHROPIC_API_KEY
+./run.sh                   # http://127.0.0.1:8000，从这里打开网页
+```
+
+看图规则与 skill 同源（写在 `server/extract_prompt.py`）：绿色=自己/白色=对方、语音转文字归发送方、忽略语音时长与时间戳。
+**纯静态直接打开**（不经 `./run.sh`）时，上传区会提示连不上后端，此时改用手动输入即可——出图功能完全不受影响。
+
+## 两种用法，按需选
+
+- **手动输入**：零 key、零后端，双击 `public/index.html` 即用，排版出图全在前端（复用 skill 的视觉，`html-to-image` 导出 PNG）。
+- **上传截图自动提对话**：需 Claude API key + 启动本地后端（见上一节），看图识别省去手敲对话。
+
+两者出图环节完全一致，区别只在「对话从哪来」。
 
 ## 文件
 
@@ -27,15 +42,5 @@
 | `public/render.js` | 对话数据 → 分镜 DOM → `html-to-image` 导出 PNG |
 | `public/themes.css` | 4 套风格变量（抽自 skill `template.html`） |
 | `public/comic.css` | 矢量兔角色 + 全套表情态（含 .shy/.angry/.sad/.tear/.shock） |
-| `server/` | **可选**。若将来拿到 Claude key，可启用它做「上传截图自动提对话」 |
-
-## 可选：将来有 key 时启用「看图自动提对话」
-
-`server/app.py`（Python 标准库，零第三方依赖）已写好：上传截图 → 调 Claude 看图 → 返回对话 JSON。
-有 key 时：
-```bash
-cp .env.example .env       # 填 ANTHROPIC_API_KEY
-./run.sh                   # http://127.0.0.1:8000
-```
-看图规则与 skill 同源（写在 `server/extract_prompt.py`）：绿色=自己/白色=对方、语音转文字归发送方、忽略语音时长与时间戳。
-当前无 key，此后端不启用，不影响纯静态页使用。
+| `server/app.py` | 可选后端：静态托管 + `POST /api/extract`（上传截图 → 调 Claude 看图 → 返回对话 JSON），Python 标准库零依赖 |
+| `server/extract_prompt.py` | 看图提对话的系统提示词，规则与 skill 同源 |

@@ -51,6 +51,15 @@
   .status{margin-top:10px;font-size:13px;min-height:18px}
   .status.ok{color:#3a9d6e}.status.err{color:#d6455f}
 
+  /* 上传图片自动提对话 */
+  .drop{margin-top:6px;border:2px dashed #d9c7d4;border-radius:12px;padding:18px 14px;
+        text-align:center;cursor:pointer;background:#fffafc;transition:.15s;color:#a06}
+  .drop:hover,.drop.over{border-color:var(--brand);background:#fff2f6}
+  .drop b{display:block;font-size:14px;font-weight:800;margin-bottom:2px}
+  .drop span{font-size:12px;color:#b3a7bb}
+  .drop .thumbs{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}
+  .drop .thumbs img{height:56px;border-radius:6px;border:1px solid var(--line)}
+
   .preview-box{background:#efe9f0;border:1px solid var(--line);border-radius:16px;
        padding:16px;overflow:hidden;min-height:320px;
        height:calc(100vh - 150px);display:flex;align-items:center;justify-content:center}
@@ -70,11 +79,20 @@
       <input type="text" id="title" placeholder="标题，如：和对象的日常" value="对话漫画">
       <input type="text" id="subtitle" placeholder="副标题（可选）" style="margin-top:8px">
 
-      <label class="field">2 · 逐条输入对话（左=对方 / 右=自己）</label>
+      <label class="field">2 · 上传聊天截图，自动提对话（可选）</label>
+      <div class="drop" id="drop">
+        <b>点此选图 / 拖入聊天截图</b>
+        <span>支持多张，自动识别对话灌进下方编辑器（需本地后端 + API Key）</span>
+        <div class="thumbs" id="thumbs"></div>
+        <input type="file" id="file" accept="image/*" multiple hidden>
+      </div>
+      <input type="text" id="hint" placeholder="补充背景（可选），如：和对象在吵架" style="margin-top:8px">
+
+      <label class="field">3 · 逐条输入 / 修改对话（左=对方 / 右=自己）</label>
       <div class="lines" id="lines"></div>
       <button class="addline" id="add">+ 加一句</button>
 
-      <label class="field">3 · 选风格</label>
+      <label class="field">4 · 选风格</label>
       <div class="styles" id="styles">
         <button data-t="theme-candy" class="on">🍬 粉色糖果</button>
         <button data-t="theme-fresh">🌿 冷调清新</button>
@@ -88,7 +106,7 @@
       </div>
       <div class="status" id="status"></div>
       <div class="hint">
-        · 全程在你浏览器本地完成，不上传任何数据、不需要联网账号<br>
+        · 手动输入 + 出图全程浏览器本地完成；仅「上传截图识别」会把图发给本地后端→Claude<br>
         · 绿色气泡=自己(右)、白色=对方(左)；格数按句数自动定(≤4→4格, ≤6→6格, 否则9格)<br>
         · 表情：开心/害羞/生气/难过/惊讶/困倦/普通
       </div>
@@ -201,6 +219,99 @@
     }
     window.onresize = () => lastData && fitScale();
     function setStatus(t, k) { const s = $("#status"); s.textContent = t; s.className = "status " + (k||""); }
+
+    // ===== 上传聊天截图 → 调后端 /api/extract → 自动灌入编辑器 =====
+    const VALID_EMO = new Set(EMOTIONS.map(([v]) => v));
+    // 后端/SKILL 可能返回编辑器没有的情绪词，归一到现有的 7 种
+    const EMO_ALIAS = { tear:"sad", cry:"sad", love:"happy", smile:"happy",
+                        surprise:"shock", surprised:"shock", tired:"sleepy", neutral:"normal" };
+    function normEmotion(e) {
+      e = (e || "normal").toLowerCase();
+      if (VALID_EMO.has(e)) return e;
+      return EMO_ALIAS[e] || "normal";
+    }
+    // 把后端的 line（按颜色/side 定身份）映射回编辑器行
+    function toRow(l) {
+      const isMe = l.color === "green" || l.side === "r" || l.speaker === "自己";
+      return { who: isMe ? "me" : "other", text: (l.text || "").trim(), emotion: normEmotion(l.emotion) };
+    }
+    function fileToDataURL(f) {
+      return new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(f);
+      });
+    }
+
+    let busy = false;
+    async function extractFiles(files) {
+      if (busy) return;
+      const imgs = [...files].filter(f => f.type.startsWith("image/"));
+      if (!imgs.length) return;
+      busy = true;
+      // 缩略图预览
+      const thumbs = $("#thumbs"); thumbs.innerHTML = "";
+      const dataURLs = [];
+      for (const f of imgs) {
+        const url = await fileToDataURL(f);
+        dataURLs.push(url);
+        const im = new Image(); im.src = url; thumbs.appendChild(im);
+      }
+      const hint = $("#hint").value.trim();
+      setStatus(`正在识别 ${imgs.length} 张截图的对话…`, "");
+      try {
+        const all = [];
+        let title = "", subtitle = "", suggest = "";
+        // 多张按顺序逐张识别，结果拼接（保持时间顺序）
+        for (let i = 0; i < dataURLs.length; i++) {
+          const resp = await fetch("/api/extract", {
+            method: "POST", headers: { "content-type": "application/json" },
+            body: JSON.stringify({ image: dataURLs[i], hint }),
+          });
+          const data = await resp.json();
+          if (!resp.ok) throw new Error(data.detail || data.error || `HTTP ${resp.status}`);
+          (data.lines || []).forEach(l => all.push(l));
+          if (!title && data.title) title = data.title;
+          if (!subtitle && data.subtitle) subtitle = data.subtitle;
+          if (!suggest && data.suggestTheme) suggest = data.suggestTheme;
+          setStatus(`已识别 ${i + 1}/${dataURLs.length} 张…`, "");
+        }
+        const rows = all.map(toRow).filter(r => r.text);
+        if (!rows.length) throw new Error("没识别出可用对话，可手动输入");
+        // 灌入编辑器：清空旧行 → 写入识别结果
+        $("#lines").innerHTML = "";
+        rows.forEach(addLine);
+        if (title) $("#title").value = title;
+        if (subtitle) $("#subtitle").value = subtitle;
+        // 应用建议风格
+        const themeBtn = suggest && { candy:"theme-candy", fresh:"theme-fresh",
+          dark:"theme-dark", retro:"theme-retro" }[suggest];
+        if (themeBtn) {
+          [...$("#styles").children].forEach(x =>
+            x.classList.toggle("on", x.dataset.t === themeBtn));
+          theme = themeBtn;
+        }
+        $("#gen").click();   // 自动出预览
+        setStatus(`识别完成，提取 ${rows.length} 句对话 ✓ 可调整后导出`, "ok");
+      } catch (e) {
+        const msg = /Failed to fetch|NetworkError/.test(e.message)
+          ? "连不上后端。纯静态打开时本功能不可用，请用 ./run.sh 启动并配置 ANTHROPIC_API_KEY，或手动输入对话。"
+          : "识别失败：" + e.message;
+        setStatus(msg, "err");
+      } finally { busy = false; }
+    }
+
+    const drop = $("#drop"), fileInput = $("#file");
+    drop.onclick = () => fileInput.click();
+    fileInput.onchange = () => { extractFiles(fileInput.files); fileInput.value = ""; };
+    ["dragover", "dragenter"].forEach(ev => drop.addEventListener(ev, e => {
+      e.preventDefault(); drop.classList.add("over");
+    }));
+    ["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => {
+      e.preventDefault(); drop.classList.remove("over");
+    }));
+    drop.addEventListener("drop", e => {
+      if (e.dataTransfer && e.dataTransfer.files.length) extractFiles(e.dataTransfer.files);
+    });
 
     // 打开即渲染示例
     $("#gen").click();
